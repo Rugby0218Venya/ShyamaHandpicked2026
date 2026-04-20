@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shyama Handpicked Bill Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for the aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;770&family=Lora:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Shyama Handpicked Bill Generator</h1>
+
+        <div class="admin-panel card">
+            <h2>Admin Panel</h2>
+            <input type="text" id="productName" placeholder="Product Name">
+            <input type="number" id="productPrice" placeholder="Product Price">
+            <input type="text" id="productImage" placeholder="Product Image URL">
+            <button id="addProduct" class="button">Add Product</button>
+        </div>
+
+        <div id="product-catalogue" class="card-grid"></div>
+
+        <div class="bill-summary card">
+            <h2>Bill Summary</h2>
+            <div id="bill-items"></div>
+            <p class="total">Total: ₹<span id="total-price">0</span></p>
+            <button id="download-bill" class="button">Download Bill as PDF</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
