@@ -1,0 +1,182 @@
+{% for customer in letter.all_customers -%}
+{% assign customer_transactions = letter.all_transactions | where: "customer_id", customer.customer_id %}
+{% assign total_disputed_amount = 0.001 %}
+{% assign total_outstanding_amount = 0.001 %}
+{% for transaction in customer_transactions -%}
+{% if transaction.overdue > 0 or transaction.credits > 0 %}
+{% assign total_disputed_amount = total_disputed_amount | plus: transaction.disputed_amount %}
+{% assign total_outstanding_amount = total_outstanding_amount | plus: transaction.outstanding_amount %}
+{% endif -%}
+{% endfor -%}
+{% assign adjusted_total_outstanding = total_disputed_amount | plus: total_outstanding_amount | round: 2 %}
+<style>
+    body { font-family: Arial, sans-serif; font-size: 10pt; }
+    .header-table, .main-table { width: 100%; border-collapse: collapse; }
+    .header-left { width: 50%; vertical-align: top; }
+    .header-right { width: 50%; vertical-align: top; }
+    .info-box { border: 1px solid #000; padding: 5px; font-size: 8pt; }
+    .info-box div { margin-bottom: 4px; }
+    .dunning-header { background-color: #cccccc; padding: 4px; font-weight: bold; }
+    .remit-info { margin-top: 20px; }
+    .transaction-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.transaction-table th { 
+        border-bottom: 2px solid #000; /* Bold line for header */
+        padding: 5px; 
+        text-align: left; 
+    }
+    .transaction-table td {
+        padding: 5px; 
+        text-align: left;
+    }
+    .transaction-table tbody tr {
+        border-bottom: 1px solid #000; /* Thin line for each data row */
+    }
+    .totals-table { width: 100%; margin-top: 10px; }
+    .totals-table td { padding: 2px 5px; }
+    .page-footer { text-align: right; position: fixed; bottom: 0; width: 100%; }
+    .label { font-weight: bold; }
+</style>
+
+<table class="header-table">
+    <tr>
+        <td class="header-left">
+            <div><img src="data:image/png;base64,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"><br><br><br></div>
+            Cognex Ireland Ltd.<br>
+            2008-2014 Block 2000<br>
+            Mallow Road<br>
+            Gateway Business Park<br>
+            Cork<br>
+            Ireland
+            <br><br>
+            {{ customer.full_address_text | newline_to_br }}
+        </td>
+        <td class="header-right">
+            <div class="info-box">
+                <div class="dunning-header">1 Dunning Notice</div>
+                <div>
+                    <span class="label">Date</span><br>
+                    {{ "now" | date: "%d-%b-%Y" | upcase }}
+                </div>
+                <div>
+                    <span class="label">Our accounting Clerk</span><br>
+                    Europe 5
+                </div>
+                <div>
+                    <span class="label">Telephone</span><br>
+                    &nbsp;
+                </div>
+                <div>
+                    <span class="label">Our Clerk's Email</span><br>
+                    Malgorzata.Schamitz@cognex.com
+                </div>
+                <div>
+                    <span class="label">Your Account with us</span><br>
+                    {{ customer.ledger_reference }}
+                </div>
+              
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="remit-info">
+ <pre class="payment-text clearfix">{{ letter.division.payment_text }}</pre>
+</div>
+
+<p>Dear Sir/Madam,</p>
+<p>The invoices listed below are due for payment. If you have paid the amounts due in the intervening period, please disregard this letter.</p>
+<p>If the referenced invoices are disputed, or if {{ customer.customer_name }} is unable to remit payment at this time, please contact us at areurope@cognex.com.</p>
+<p>Kind regards,<br>Cognex</p>
+
+<table >
+    <thead>
+        <tr  class="transaction-table">
+            <th>Document</th>
+            <th>Date</th>
+            <th>Purchase Order No</th>
+            <th>Currency</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Arrears</th>
+        </tr>
+    </thead>
+    <tbody>
+            <td style="text-align: right;">
+
+
+    {% for transaction in customer_transactions -%}
+        <tr>
+            <td style="width: 11.5%;">{{ transaction.reference }}</td>
+            <td style="width: 11.5%;">{{ transaction.raised_date | date: "%d-%b-%Y" | upcase }}</td>
+            <td style="width: 11.5%;">{{ transaction.inv_data5 }}</td>
+            <td style="width: 8%;">{{ transaction.currency_code }}</td>
+             <td style="width: 11.5%;">
+             {%- case customer.currency_code -%}
+    {%- when 'USD' or 'MXN' -%}
+      $
+    {%- when 'EUR' -%}
+      €
+    {%- when 'CNY' or 'JPY' -%}
+      ¥
+    {%- when 'KRW' -%}
+      ₩
+    {%- when 'INR' -%}
+      ₹
+    {%- else -%}
+      {{ customer.currency_code }}&nbsp;
+  {%- endcase -%}
+            {{ transaction.outstanding_amount | money_without_currency | round : 2 }}</td>
+            <td style="width: 11.5%;">{{ transaction.due_date | date: "%d-%b-%Y" | upcase }}</td>
+            <td style="width: 11.5%;">{{ transaction.days_past_due }}</td>
+        </tr>
+    {% endfor -%}
+    </tbody>
+</table>
+
+<table class="totals-table">
+
+    <tr>
+        <td style="width: 54%;"><span class="label">Total of due items</span></td>
+    <td>
+            {%- case customer.currency_code -%}
+              {%- when 'USD' or 'MXN' -%}
+                $
+              {%- when 'EUR' -%}
+                €
+              {%- when 'CNY' or 'JPY' -%}
+                ¥
+              {%- when 'KRW' -%}
+                ₩
+              {%- when 'INR' -%}
+                ₹
+              {%- else -%}
+                {{ customer.currency_code }}&nbsp;
+            {%- endcase -%}
+            {{ total_outstanding_amount | minus: 0.001 | money_without_currency | round : 2 }}
+        </td>
+    </tr>
+    <tr>
+        <td style="width: 54%;"><span class="label">Account balance</span></td>
+        <td>
+            {%- case customer.currency_code -%}
+              {%- when 'USD' or 'MXN' -%}
+                $
+              {%- when 'EUR' -%}
+                €
+              {%- when 'CNY' or 'JPY' -%}
+                ¥
+              {%- when 'KRW' -%}
+                ₩
+              {%- when 'INR' -%}
+                ₹
+              {%- else -%}
+                {{ customer.currency_code }}&nbsp;
+            {%- endcase -%}
+            {{ customer.account_balance | money_without_currency | round : 2 }}
+    </tr>
+</table>
+    
+
+<div class="page-footer">Page 1 - 1</div>
+
+{% endfor -%}
