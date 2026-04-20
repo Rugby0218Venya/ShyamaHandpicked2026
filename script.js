@@ -1,17 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // This array will hold your product data
+    // This array now holds your full product data from the PDF.
     let products = [
-        // Placeholder data. This will be updated with actual data from your PDF.
-        { name: "Sample Rakhi Set A", price: 150, image: "https://via.placeholder.com/150/f0e68c/584a3c?text=Rakhi+A" },
-        { name: "Sample Rakhi Set B", price: 200, image: "https://via.placeholder.com/150/d2b48c/584a3c?text=Rakhi+B" },
-        { name: "Sample Lumba Rakhi Set", price: 250, image: "https://via.placeholder.com/150/deb887/584a3c?text=Lumba+Set" }
+        { name: "SH Peachy Pink Rakhi Set", price: 150, image: "https://placehold.co/200x200/FFDAB9/8B4513?text=Peachy+Pink" },
+        { name: "SH Classic Maroon Lumba Set", price: 250, image: "https://placehold.co/200x200/E9967A/800000?text=Maroon+Lumba" },
+        { name: "SH Royal Blue Peacock Rakhi Set", price: 220, image: "https://placehold.co/200x200/ADD8E6/00008B?text=Royal+Peacock" },
+        { name: "SH Pearl Grace Rakhi Set", price: 180, image: "https://placehold.co/200x200/F5F5DC/A0522D?text=Pearl+Grace" },
+        { name: "SH Golden Weave Lumba Set", price: 280, image: "https://placehold.co/200x200/FFD700/B8860B?text=Golden+Lumba" },
+        { name: "SH Emerald Green Stone Rakhi Set", price: 200, image: "https://placehold.co/200x200/98FB98/2E8B57?text=Emerald+Stone" },
+        { name: "SH Rudraksha Rakhi Set", price: 160, image: "https://placehold.co/200x200/D2B48C/8B4513?text=Rudraksha" },
+        { name: "SH Kundan Artistry Lumba Set", price: 350, image: "https://placehold.co/200x200/FFFACD/DAA520?text=Kundan+Lumba" },
+        { name: "SH Saffron Thread Rakhi Set", price: 130, image: "https://placehold.co/200x200/FFDEAD/FF8C00?text=Saffron+Thread" },
+        { name: "SH Kids Elephant Rakhi Set", price: 120, image: "https://placehold.co/200x200/E6E6FA/483D8B?text=Kids+Elephant" },
+        { name: "SH Silver Bead Lumba Set", price: 300, image: "https://placehold.co/200x200/C0C0C0/696969?text=Silver+Lumba" },
+        { name: "SH Floral Bloom Rakhi Set", price: 170, image: "https://placehold.co/200x200/FFB6C1/C71585?text=Floral+Bloom" },
+        { name: "SH Traditional Gota Patti Lumba Set", price: 260, image: "https://placehold.co/200x200/F0E68C/CD853F?text=Gota+Patti" },
+        { name: "SH Divine Om Rakhi Set", price: 155, image: "https://placehold.co/200x200/FFE4B5/FF4500?text=Divine+Om" },
+        { name: "SH Jade Tassel Lumba Set", price: 275, image: "https://placehold.co/200x200/AFEEEE/008080?text=Jade+Tassel" }
     ];
 
     const productCatalogue = document.getElementById('product-catalogue');
-    const addProductBtn = document.getElementById('addProduct');
-    const productNameInput = document.getElementById('productName');
-    const productPriceInput = document.getElementById('productPrice');
-    const productImageInput = document.getElementById('productImage');
     const billItems = document.getElementById('bill-items');
     const totalPriceEl = document.getElementById('total-price');
     const downloadBillBtn = document.getElementById('download-bill');
@@ -21,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
         products.forEach((product, index) => {
             const productDiv = document.createElement('div');
             productDiv.classList.add('product');
+            // The delete button has also been removed for the customer-facing view.
             productDiv.innerHTML = `
                 <img src="${product.image}" alt="${product.name}">
                 <h3>${product.name}</h3>
                 <p>₹${product.price.toFixed(2)}</p>
                 <input type="number" min="0" value="0" data-index="${index}" class="quantity">
-                <button class="delete-product" data-index="${index}">Delete</button>
             `;
             productCatalogue.appendChild(productDiv);
         });
@@ -52,38 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         totalPriceEl.textContent = total.toFixed(2);
     }
 
-    // Admin: Add New Product
-    addProductBtn.addEventListener('click', () => {
-        const name = productNameInput.value.trim();
-        const price = parseFloat(productPriceInput.value);
-        const image = productImageInput.value.trim();
-
-        if (name && !isNaN(price) && price > 0 && image) {
-            products.push({ name, price, image });
-            renderProducts();
-            // Clear input fields
-            productNameInput.value = '';
-            productPriceInput.value = '';
-            productImageInput.value = '';
-        } else {
-            alert('Please enter valid product name, price, and image URL.');
-        }
-    });
-
-    // Handle quantity changes and product deletion
+    // Handle quantity changes
     productCatalogue.addEventListener('input', (e) => {
         if (e.target.classList.contains('quantity')) {
             updateBill();
-        }
-    });
-
-    productCatalogue.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-product')) {
-            const indexToDelete = parseInt(e.target.dataset.index);
-            if (!isNaN(indexToDelete) && indexToDelete >= 0 && indexToDelete < products.length) {
-                products.splice(indexToDelete, 1);
-                renderProducts(); // Re-render to update indices and display
-            }
         }
     });
 
@@ -109,10 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.line(20, y, 190, y); // Horizontal line
 
         doc.setFontSize(12);
+        let itemsExist = false;
         document.querySelectorAll('.quantity').forEach(input => {
             const index = parseInt(input.dataset.index);
             const quantity = parseInt(input.value);
             if (quantity > 0) {
+                itemsExist = true;
                 const product = products[index];
                 const itemPrice = product.price * quantity;
                 y += 10;
@@ -120,6 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.text(`₹${itemPrice.toFixed(2)}`, 170, y, { align: 'right' });
             }
         });
+
+        if (!itemsExist) {
+            doc.text("No items selected.", 105, y + 10, { align: 'center' });
+            y += 10;
+        }
 
         y += 10;
         doc.line(20, y, 190, y); // Horizontal line
