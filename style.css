@@ -1,18 +1,35 @@
 /* Add these new styles to the end of your style.css file */
 
-.bill-actions {
-    display: flex;
-    justify-content: flex-end; /* Aligns buttons to the right */
-    gap: 15px; /* Adds space between the buttons */
-    margin-top: 20px;
-    flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+.customer-details {
+    margin-top: 40px;
 }
 
-.button-secondary {
-    background-color: #a0a0a0; /* A neutral grey color */
-    color: white;
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two-column layout */
+    gap: 20px;
 }
 
-.button-secondary:hover {
-    background-color: #888888;
+.details-grid input,
+.details-grid textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d3c5aa;
+    border-radius: 4px;
+    font-family: 'Lora', serif;
+    color: #584a3c;
+    box-sizing: border-box; /* Ensures padding is included in width */
+    background-color: #fffbf5;
+}
+
+/* Make textareas span both columns */
+.details-grid textarea {
+    grid-column: 1 / -1;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+    .details-grid {
+        grid-template-columns: 1fr; /* Single column on small screens */
+    }
 }
