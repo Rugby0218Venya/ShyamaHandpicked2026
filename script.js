@@ -68,14 +68,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const billItems = document.getElementById('bill-items');
     const totalPriceEl = document.getElementById('total-price');
     const downloadBillBtn = document.getElementById('download-bill');
-    const clearSelectionBtn = document.getElementById('clear-selection'); // Get the new button
+    const clearSelectionBtn = document.getElementById('clear-selection');
 
-    function getPriceForQuantity(quantity, pricingTiers) {
+    // Helper function to get the price for a given quantity (standard logic)
+    function getStandardPriceForQuantity(quantity, pricingTiers) {
         for (const tier of pricingTiers) {
             if (quantity >= tier.moq) return tier.price;
         }
+        // If no tier is met, return the highest price (associated with the lowest MOQ)
         return pricingTiers[pricingTiers.length - 1].price;
     }
+
+    // --- NEW: REWRITTEN updateBill FUNCTION WITH TWO-PASS LOGIC ---
+    function updateBill() {
+        // --- PASS 1: Calculate Provisional Total ---
+        let provisionalTotal = 0;
+        const selectedItems = [];
+
+        document.querySelectorAll('.quantity').forEach(input => {
+            const quantity = parseInt(input.value);
+            if (quantity > 0) {
+                const index = parseInt(input.dataset.index);
+                const product = products[index];
+                
+                // For provisional total, always use standard pricing
+                const pricePerItem = getStandardPriceForQuantity(quantity, product.pricing);
+                provisionalTotal += pricePerItem * quantity;
+                
+                selectedItems.push({ ...product, quantity, index });
+            }
+        });
+
+        // --- PASS 2: Calculate Final Total and Render Bill Items ---
+        let finalTotal = 0;
+        billItems.innerHTML = '';
+
+        selectedItems.forEach(item => {
+            let pricePerItem = 0;
+            let ruleApplied = '';
+
+            // Get the lowest MOQ and highest price for the product
+            const lowestMoq = item.pricing[item.pricing.length - 1].moq;
+            const highestPrice = item.pricing[item.pricing.length - 1].price;
+
+            // Check if the quantity is below the lowest MOQ
+            if (item.quantity < lowestMoq) {
+                // Apply your special rules
+                if (provisionalTotal < 20000) {
+                    // Rule A: Price is 0
+                    pricePerItem = 0;
+                    ruleApplied = ' (MOQ not met, Bill < 20k)';
+                } else {
+                    // Rule B: Use the highest price
+                    pricePerItem = highestPrice;
+                    ruleApplied = ' (MOQ not met, Bill > 20k)';
+                }
+            } else {
+                // Standard Rule: Use normal tiered pricing
+                pricePerItem = getStandardPriceForQuantity(item.quantity, item.pricing);
+            }
+
+            const finalItemPrice = pricePerItem * item.quantity;
+            finalTotal += finalItemPrice;
+
+            // Render the item in the bill summary
+            const billItem = document.createElement('div');
+            billItem.textContent = `${item.name} x ${item.quantity} @ ₹${pricePerItem.toFixed(2)} = ₹${finalItemPrice.toFixed(2)}${ruleApplied}`;
+            billItems.appendChild(billItem);
+        });
+
+        // Update the total price display
+        totalPriceEl.textContent = finalTotal.toFixed(2);
+    }
+    
+    // ---UNCHANGED FUNCTIONS BELOW---
 
     function renderProducts() {
         products.forEach(p => p.pricing.sort((a, b) => b.moq - a.moq));
@@ -99,41 +165,24 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBill();
     }
 
-    function updateBill() {
-        let total = 0;
-        billItems.innerHTML = '';
-        document.querySelectorAll('.quantity').forEach(input => {
-            const index = input.dataset.index;
-            const quantity = parseInt(input.value);
-            if (quantity > 0) {
-                const product = products[index];
-                const pricePerItem = getPriceForQuantity(quantity, product.pricing);
-                const itemPrice = pricePerItem * quantity;
-                total += itemPrice;
-                const billItem = document.createElement('div');
-                billItem.textContent = `${product.name} x ${quantity} @ ₹${pricePerItem.toFixed(2)} = ₹${itemPrice.toFixed(2)}`;
-                billItems.appendChild(billItem);
-            }
-        });
-        totalPriceEl.textContent = total.toFixed(2);
-    }
-
     productCatalogue.addEventListener('input', e => {
         if (e.target.classList.contains('quantity')) updateBill();
     });
 
-    // --- NEW: Event listener for the Clear Selection button ---
     clearSelectionBtn.addEventListener('click', () => {
-        // Find all quantity input fields and set their value to 0
         document.querySelectorAll('.quantity').forEach(input => {
             input.value = 0;
         });
-        // Recalculate the bill (which will now be 0)
         updateBill();
     });
 
-    // --- ADVANCED PDF GENERATION ---
     downloadBillBtn.addEventListener('click', async () => {
+        const customerName = document.getElementById('customerName').value.trim();
+        if (!customerName) {
+            alert("Please enter a Customer Name to generate the bill number.");
+            return;
+        }
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const downloadButton = document.getElementById('download-bill');
@@ -141,33 +190,60 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadButton.textContent = 'Preparing PDF...';
         downloadButton.disabled = true;
 
-        let headerFont = 'Helvetica';
-        let bodyFont = 'Helvetica';
+        let billCounter = parseInt(localStorage.getItem('billCounter') || '0') + 1;
+        const billNumber = `${customerName.split(' ')[0]}_${billCounter}`;
+        localStorage.setItem('billCounter', billCounter);
+        const today = new Date();
+        const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
+        // (The PDF generation logic remains the same as the previous version)
+        // It will correctly use the final calculated prices displayed on the screen.
+        const customerPhone = document.getElementById('customerPhone').value.trim();
+        const customerAddress = document.getElementById('customerAddress').value.trim();
+        const customerNotes = document.getElementById('customerNotes').value.trim();
+        
         const loadImage = (src) => new Promise((resolve) => {
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => resolve(img);
-            img.onerror = () => {
-                console.error(`Failed to load image: ${src}`);
-                resolve(null);
-            };
+            img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); };
             img.src = src;
         });
 
         const billData = [];
         let itemsExist = false;
         document.querySelectorAll('.quantity').forEach(input => {
-            const index = parseInt(input.dataset.index);
-            const quantity = parseInt(input.value);
-            if (quantity > 0) {
+            if (parseInt(input.value) > 0) {
                 itemsExist = true;
-                const product = products[index];
-                const pricePerItem = getPriceForQuantity(quantity, product.pricing);
+                // Re-run the same pricing logic for the PDF to ensure consistency
+                const product = products[parseInt(input.dataset.index)];
+                const quantity = parseInt(input.value);
+                const provisionalTotalForPdf = Array.from(document.querySelectorAll('.quantity')).reduce((total, inp) => {
+                    const q = parseInt(inp.value);
+                    if (q > 0) {
+                        const p = products[parseInt(inp.dataset.index)];
+                        return total + (getStandardPriceForQuantity(q, p.pricing) * q);
+                    }
+                    return total;
+                }, 0);
+
+                const lowestMoq = product.pricing[product.pricing.length - 1].moq;
+                const highestPrice = product.pricing[product.pricing.length - 1].price;
+                let pricePerItem = 0;
+
+                if (quantity < lowestMoq) {
+                    if (provisionalTotalForPdf < 20000) {
+                        pricePerItem = 0;
+                    } else {
+                        pricePerItem = highestPrice;
+                    }
+                } else {
+                    pricePerItem = getStandardPriceForQuantity(quantity, product.pricing);
+                }
                 billData.push({ ...product, quantity, pricePerItem });
             }
         });
-
+        
         if (!itemsExist) {
             alert("Please select a quantity for at least one item.");
             downloadButton.textContent = 'Download Bill as PDF';
@@ -175,57 +251,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const imagePromises = billData.map(item => loadImage(item.image));
-        const loadedImages = await Promise.all(imagePromises);
-
-        doc.setFont(headerFont, 'bold');
-        doc.setFontSize(20);
-        doc.text("Shyama Handpicked Bill", 105, 20, { align: 'center' });
+        const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
         
-        doc.setFont(bodyFont, 'normal');
-        doc.setFontSize(9);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, 26, { align: 'center' });
-        doc.setDrawColor(150, 150, 150);
-        doc.line(15, 30, 195, 30);
-
-        let y = 40;
-        const imageSize = 12;
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(20).text("Shyama Handpicked Bill", 105, 15, { align: 'center' });
+        let y = 25;
+        doc.setFontSize(10).text("Bill To:", 15, y);
+        doc.setFont('Helvetica', 'normal').text(customerName, 35, y);
+        if (customerPhone) doc.text(`Phone: ${customerPhone}`, 15, y += 5);
+        if (customerAddress) doc.text(`Address: ${customerAddress}`, 15, y += 5);
+        doc.setFont('Helvetica', 'bold').text("Bill No:", 140, 25);
+        doc.setFont('Helvetica', 'normal').text(billNumber, 160, 25);
+        doc.setFont('Helvetica', 'bold').text("Date:", 140, 30);
+        doc.setFont('Helvetica', 'normal').text(formattedDate, 160, 30);
+        y = Math.max(y, 40) + 5;
+        doc.setDrawColor(150, 150, 150).line(15, y - 2, 195, y - 2);
 
         billData.forEach((item, index) => {
-            const loadedImg = loadedImages[index];
-            const itemTotal = item.pricePerItem * item.quantity;
-
-            if (loadedImg) {
-                doc.addImage(loadedImg, 'JPEG', 15, y - (imageSize / 2) - 1, imageSize, imageSize);
-            }
-            
-            doc.setFont(bodyFont, 'normal');
-            doc.setFontSize(10);
-            doc.text(item.name, 32, y);
-            
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`${item.quantity} x ₹${item.pricePerItem.toFixed(2)}`, 32, y + 5);
-            
-            doc.setFontSize(11);
-            doc.setTextColor(0);
-            doc.text(`₹${itemTotal.toFixed(2)}`, 195, y + 2, { align: 'right' });
-
-            y += (imageSize + 8);
-            if (y > 270) {
-                doc.addPage();
-                y = 20;
-            }
+            if (y > 260) { doc.addPage(); y = 20; }
+            doc.addImage(loadedImages[index], 'JPEG', 15, y, 12, 12);
+            doc.setFontSize(10).text(item.name, 32, y + 5);
+            doc.setFontSize(9).setTextColor(100).text(`${item.quantity} x ₹${item.pricePerItem.toFixed(2)}`, 32, y + 10);
+            doc.setFontSize(11).setTextColor(0).text(`₹${(item.pricePerItem * item.quantity).toFixed(2)}`, 195, y + 7, { align: 'right' });
+            y += 20;
         });
 
         doc.line(15, y, 195, y);
-        y += 8;
-        doc.setFont(headerFont, 'bold');
-        doc.setFontSize(14);
-        doc.text(`Total: ₹${totalPriceEl.textContent}`, 195, y, { align: 'right' });
-        
-        doc.save('Shyama_Handpicked_Bill.pdf');
-        
+        if (customerNotes) {
+            y += 7;
+            doc.setFontSize(9).setFont('Helvetica', 'bold').text("Notes:", 15, y);
+            const notesLines = doc.splitTextToSize(customerNotes, 180);
+            doc.setFont('Helvetica', 'normal').text(notesLines, 15, y + 4);
+            y += (notesLines.length * 4) + 4;
+        }
+        y += 5;
+        doc.setFont('Helvetica', 'bold').setFontSize(14).text(`Total: ₹${totalPriceEl.textContent}`, 195, y, { align: 'right' });
+        doc.save(`${billNumber}.pdf`);
         downloadButton.textContent = 'Download Bill as PDF';
         downloadButton.disabled = false;
     });
