@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPriceEl = document.getElementById('total-price');
     const downloadBillBtn = document.getElementById('download-bill');
     const clearSelectionBtn = document.getElementById('clear-selection');
-    
+
+    // --- YOUR COMPLETE PRODUCT LIST ---
     let products = [
         { "name": "BHAGWANJI RAKHI LUMBA SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+RAKHI+LUMBA+SET", "pricing": [{ "moq": 7, "price": 56 }] },
         { "name": "BHAGWANJI MOLI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+MOLI+SET", "pricing": [{ "moq": 7, "price": 31 }] },
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "ROLI CHAWAL NARIYAL PACKING", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+NARIYAL+PACKING", "pricing": [{ "moq": 11, "price": 68 }] }
     ];
 
-      // --- PAGE SWITCHING LOGIC ---
+    // --- PAGE SWITCHING LOGIC ---
     proceedToOrderBtn.addEventListener('click', () => {
         if (customerNameInput.value.trim() === '') {
             alert('Please enter a Customer Name before proceeding.');
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsPage.classList.remove('hidden');
     });
 
-    // --- BILLING LOGIC (Two-Pass Calculation from previous step) ---
+    // --- BILLING LOGIC (Two-Pass Calculation) ---
     function getStandardPriceForQuantity(quantity, pricingTiers) {
         for (const tier of pricingTiers) {
             if (quantity >= tier.moq) return tier.price;
@@ -144,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         totalPriceEl.textContent = finalTotal.toFixed(2);
     }
     
-    // --- UNCHANGED FUNCTIONS AND EVENT LISTENERS ---
     function renderProducts() {
         products.forEach(p => p.pricing.sort((a, b) => b.moq - a.moq));
         productCatalogue.innerHTML = '';
@@ -178,35 +178,112 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBill();
     });
 
+    // --- FULLY CORRECTED PDF GENERATION LOGIC ---
     downloadBillBtn.addEventListener('click', async () => {
-        const customerName = customerNameInput.value.trim(); // Get data from the stored input
-        // The PDF generation will now correctly pull the details from the first page's inputs.
-        // The rest of the PDF generation logic from the previous step remains the same.
-        // ...(The full PDF generation code from the previous response goes here)...
+        const customerName = customerNameInput.value.trim();
         const customerPhone = customerPhoneInput.value.trim();
         const customerAddress = customerAddressInput.value.trim();
         const customerNotes = customerNotesInput.value.trim();
-        
-        // The rest of the advanced PDF generation logic from the previous step follows...
+
+        if (!customerName) {
+            alert("Please enter a Customer Name to generate the bill number.");
+            return;
+        }
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const downloadButton = document.getElementById('download-bill');
+        
         downloadButton.textContent = 'Preparing PDF...';
         downloadButton.disabled = true;
+
         let billCounter = parseInt(localStorage.getItem('billCounter') || '0') + 1;
         const billNumber = `${customerName.split(' ')[0]}_${billCounter}`;
         localStorage.setItem('billCounter', billCounter);
         const today = new Date();
         const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-        const loadImage = (src) => new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => resolve(img); img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); }; img.src = src; });
+        
+        const loadImage = (src) => new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => resolve(img);
+            img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); };
+            img.src = src;
+        });
+
         const billData = [];
         let itemsExist = false;
-        document.querySelectorAll('.quantity').forEach(input => { if (parseInt(input.value) > 0) { itemsExist = true; const product = products[parseInt(input.dataset.index)]; const quantity = parseInt(input.value); const provisionalTotalForPdf = Array.from(document.querySelectorAll('.quantity')).reduce((total, inp) => { const q = parseInt(inp.value); if (q > 0) { const p = products[parseInt(inp.dataset.index)]; return total + (getStandardPriceForQuantity(q, p.pricing) * q); } return total; }, 0); const lowestMoq = product.pricing[product.pricing.length - 1].moq; const highestPrice = product.pricing[product.pricing.length - 1].price; let pricePerItem = 0; if (quantity < lowestMoq) { if (provisionalTotalForPdf < 20000) { pricePerItem = 0; } else { pricePerItem = highestPrice; } } else { pricePerItem = getStandardPriceForQuantity(quantity, product.pricing); } billData.push({ ...product, quantity, pricePerItem }); } });
-        if (!itemsExist) { alert("Please select a quantity for at least one item."); downloadButton.textContent = 'Download Bill as PDF'; downloadButton.disabled = false; return; }
+        let provisionalTotalForPdf = 0;
+        const tempSelectedItems = [];
+        
+        document.querySelectorAll('.quantity').forEach(input => {
+            const quantity = parseInt(input.value);
+            if (quantity > 0) {
+                itemsExist = true;
+                const product = products[parseInt(input.dataset.index)];
+                tempSelectedItems.push({ product, quantity });
+                provisionalTotalForPdf += getStandardPriceForQuantity(quantity, product.pricing) * quantity;
+            }
+        });
+
+        if (!itemsExist) {
+            alert("Please select a quantity for at least one item.");
+            downloadButton.textContent = 'Download Bill as PDF';
+            downloadButton.disabled = false;
+            return;
+        }
+
+        tempSelectedItems.forEach(({ product, quantity }) => {
+            const lowestMoq = product.pricing[product.pricing.length - 1].moq;
+            const highestPrice = product.pricing[product.pricing.length - 1].price;
+            let pricePerItem;
+            if (quantity < lowestMoq) {
+                pricePerItem = (provisionalTotalForPdf < 20000) ? 0 : highestPrice;
+            } else {
+                pricePerItem = getStandardPriceForQuantity(quantity, product.pricing);
+            }
+            billData.push({ ...product, quantity, pricePerItem });
+        });
+
         const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
-        doc.setFont('Helvetica', 'bold'); doc.setFontSize(20).text("Shyama Handpicked Bill", 105, 15, { align: 'center' }); let y = 25; doc.setFontSize(10).text("Bill To:", 15, y); doc.setFont('Helvetica', 'normal').text(customerName, 35, y); if (customerPhone) doc.text(`Phone: ${customerPhone}`, 15, y += 5); if (customerAddress) doc.text(`Address: ${customerAddress}`, 15, y += 5); doc.setFont('Helvetica', 'bold').text("Bill No:", 140, 25); doc.setFont('Helvetica', 'normal').text(billNumber, 160, 25); doc.setFont('Helvetica', 'bold').text("Date:", 140, 30); doc.setFont('Helvetica', 'normal').text(formattedDate, 160, 30); y = Math.max(y, 40) + 5; doc.setDrawColor(150, 150, 150).line(15, y - 2, 195, y - 2);
-        billData.forEach((item, index) => { if (y > 260) { doc.addPage(); y = 20; } doc.addImage(loadedImages[index], 'JPEG', 15, y, 12, 12); doc.setFontSize(10).text(item.name, 32, y + 5); doc.setFontSize(9).setTextColor(100).text(`${item.quantity} x ₹${item.pricePerItem.toFixed(2)}`, 32, y + 10); doc.setFontSize(11).setTextColor(0).text(`₹${(item.pricePerItem * item.quantity).toFixed(2)}`, 195, y + 7, { align: 'right' }); y += 20; });
-        doc.line(15, y, 195, y); if (customerNotes) { y += 7; doc.setFontSize(9).setFont('Helvetica', 'bold').text("Notes:", 15, y); const notesLines = doc.splitTextToSize(customerNotes, 180); doc.setFont('Helvetica', 'normal').text(notesLines, 15, y + 4); y += (notesLines.length * 4) + 4; } y += 5; doc.setFont('Helvetica', 'bold').setFontSize(14).text(`Total: ₹${totalPriceEl.textContent}`, 195, y, { align: 'right' });
+        
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(20).text("Shyama Handpicked Bill", 105, 15, { align: 'center' });
+        let y = 25;
+        doc.setFontSize(10).text("Bill To:", 15, y);
+        doc.setFont('Helvetica', 'normal').text(customerName, 35, y);
+        if (customerPhone) doc.text(`Phone: ${customerPhone}`, 15, y += 5);
+        if (customerAddress) doc.text(`Address: ${customerAddress}`, 15, y += 5);
+        doc.setFont('Helvetica', 'bold').text("Bill No:", 140, 25);
+        doc.setFont('Helvetica', 'normal').text(billNumber, 160, 25);
+        doc.setFont('Helvetica', 'bold').text("Date:", 140, 30);
+        doc.setFont('Helvetica', 'normal').text(formattedDate, 160, 30);
+        y = Math.max(y, 40) + 5;
+        doc.setDrawColor(150, 150, 150).line(15, y - 2, 195, y - 2);
+
+        billData.forEach((item, index) => {
+            if (y > 260) { doc.addPage(); y = 20; }
+            if (loadedImages[index]) {
+                doc.addImage(loadedImages[index], 'JPEG', 15, y, 12, 12);
+            }
+            const itemTotal = item.pricePerItem * item.quantity;
+            doc.setFontSize(10).text(item.name, 32, y + 5);
+            doc.setFontSize(9).setTextColor(100).text(`${item.quantity} x ₹${item.pricePerItem.toFixed(2)}`, 32, y + 10);
+            doc.setFontSize(11).setTextColor(0).text(`₹${itemTotal.toFixed(2)}`, 195, y + 7, { align: 'right' });
+            y += 20;
+        });
+
+        doc.line(15, y, 195, y);
+        if (customerNotes) {
+            y += 7;
+            doc.setFontSize(9).setFont('Helvetica', 'bold').text("Notes:", 15, y);
+            const notesLines = doc.splitTextToSize(customerNotes, 180);
+            doc.setFont('Helvetica', 'normal').text(notesLines, 15, y + 4);
+            y += (notesLines.length * 4) + 4;
+        }
+        y += 5;
+        doc.setFont('Helvetica', 'bold').setFontSize(14).text(`Total: ₹${totalPriceEl.textContent}`, 195, y, { align: 'right' });
+        
         doc.save(`${billNumber}.pdf`);
         downloadButton.textContent = 'Download Bill as PDF';
         downloadButton.disabled = false;
