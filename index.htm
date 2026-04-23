@@ -13,11 +13,21 @@
 
         <div id="product-catalogue" class="card-grid"></div>
 
+        <!-- NEW: Customer Details Section -->
+        <div class="customer-details card">
+            <h2>Customer Details</h2>
+            <div class="details-grid">
+                <input type="text" id="customerName" placeholder="Full Name (Required for Bill No.)">
+                <input type="tel" id="customerPhone" placeholder="Phone Number">
+                <textarea id="customerAddress" placeholder="Shipping Address" rows="3"></textarea>
+                <textarea id="customerNotes" placeholder="Additional Notes..." rows="3"></textarea>
+            </div>
+        </div>
+
         <div class="bill-summary card">
             <h2>Bill Summary</h2>
             <div id="bill-items"></div>
             <p class="total">Total: ₹<span id="total-price">0</span></p>
-            <!-- Wrapper for the buttons -->
             <div class="bill-actions">
                 <button id="clear-selection" class="button button-secondary">Clear Selection</button>
                 <button id="download-bill" class="button">Download Bill as PDF</button>
