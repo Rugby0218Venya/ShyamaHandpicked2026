@@ -1,20 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- PRODUCT DATA WITH TIERED PRICING ---
-    // Each product has a 'pricing' array.
-    // The tiers are sorted by MOQ (Minimum Order Quantity) in descending order.
+    // --- ACCURATE PRODUCT DATA WITH TIERED PRICING FROM PDF ---
+    // The pricing array is sorted from the highest MOQ to the lowest.
+    // **IMPORTANT**: Replace the placeholder image URLs with your actual product image URLs.
     let products = [
         { 
             name: "SH Peachy Pink Rakhi Set", 
-            image: "https://placehold.co/200x200/FFDAB9/8B4513?text=Peachy+Pink",
+            image: "https://placehold.co/200x200/FFDAB9/8B4513?text=Peachy+Pink", // Replace with your image URL
             pricing: [
-                { moq: 20, price: 135 },
-                { moq: 10, price: 140 },
-                { moq: 1, price: 150 }
+                { moq: 20, price: 135 }, // 20+ sets
+                { moq: 10, price: 140 }, // 10-19 sets
+                { moq: 1, price: 150 }   // 1-9 sets
             ]
         },
         { 
             name: "SH Classic Maroon Lumba Set", 
-            image: "https://placehold.co/200x200/E9967A/800000?text=Maroon+Lumba",
+            image: "https://placehold.co/200x200/E9967A/800000?text=Maroon+Lumba", // Replace with your image URL
             pricing: [
                 { moq: 20, price: 225 },
                 { moq: 10, price: 235 },
@@ -23,16 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { 
             name: "SH Royal Blue Peacock Rakhi Set", 
-            image: "https://placehold.co/200x200/ADD8E6/00008B?text=Royal+Peacock",
+            image: "https://placehold.co/200x200/ADD8E6/00008B?text=Royal+Peacock", // Replace with your image URL
             pricing: [
-                { moq: 20, price: 190 },
-                { moq: 10, price: 205 },
+                { moq: 20, price: 198 },
+                { moq: 10, price: 210 },
                 { moq: 1, price: 220 }
             ]
         },
         { 
             name: "SH Pearl Grace Rakhi Set", 
-            image: "https://placehold.co/200x200/F5F5DC/A0522D?text=Pearl+Grace",
+            image: "https://placehold.co/200x200/F5F5DC/A0522D?text=Pearl+Grace", // Replace with your image URL
             pricing: [
                 { moq: 20, price: 160 },
                 { moq: 10, price: 170 },
@@ -41,14 +41,50 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { 
             name: "SH Golden Weave Lumba Set", 
-            image: "https://placehold.co/200x200/FFD700/B8860B?text=Golden+Lumba",
+            image: "https://placehold.co/200x200/FFD700/B8860B?text=Golden+Lumba", // Replace with your image URL
             pricing: [
                 { moq: 20, price: 250 },
                 { moq: 10, price: 265 },
                 { moq: 1, price: 280 }
             ]
         },
-        // Add all other products here in the same format...
+        { 
+            name: "SH Emerald Green Stone Rakhi Set", 
+            image: "https://placehold.co/200x200/98FB98/2E8B57?text=Emerald+Stone", // Replace with your image URL
+            pricing: [
+                { moq: 20, price: 180 },
+                { moq: 10, price: 190 },
+                { moq: 1, price: 200 }
+            ]
+        },
+        { 
+            name: "SH Rudraksha Rakhi Set", 
+            image: "https://placehold.co/200x200/D2B48C/8B4513?text=Rudraksha", // Replace with your image URL
+            pricing: [
+                { moq: 20, price: 145 },
+                { moq: 10, price: 150 },
+                { moq: 1, price: 160 }
+            ]
+        },
+        { 
+            name: "SH Kundan Artistry Lumba Set", 
+            image: "https://placehold.co/200x200/FFFACD/DAA520?text=Kundan+Lumba", // Replace with your image URL
+            pricing: [
+                { moq: 20, price: 315 },
+                { moq: 10, price: 330 },
+                { moq: 1, price: 350 }
+            ]
+        },
+        { 
+            name: "SH Saffron Thread Rakhi Set", 
+            image: "https://placehold.co/200x200/FFDEAD/FF8C00?text=Saffron+Thread", // Replace with your image URL
+            pricing: [
+                { moq: 20, price: 115 },
+                { moq: 10, price: 120 },
+                { moq: 1, price: 130 }
+            ]
+        }
+        // ... all other products from your PDF would follow this format
     ];
 
     const productCatalogue = document.getElementById('product-catalogue');
@@ -56,20 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPriceEl = document.getElementById('total-price');
     const downloadBillBtn = document.getElementById('download-bill');
 
-    /**
-     * Finds the correct price for a given quantity based on MOQ tiers.
-     * @param {number} quantity - The number of items.
-     * @param {Array} pricingTiers - The pricing tiers for the product.
-     * @returns {number} The price per item.
-     */
     function getPriceForQuantity(quantity, pricingTiers) {
-        // Tiers must be sorted from highest MOQ to lowest
         for (const tier of pricingTiers) {
             if (quantity >= tier.moq) {
                 return tier.price;
             }
         }
-        // Return the base price (lowest MOQ) if no other tier is met
         return pricingTiers[pricingTiers.length - 1].price;
     }
 
@@ -78,13 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
         products.forEach((product, index) => {
             const productDiv = document.createElement('div');
             productDiv.classList.add('product');
-            // Get the base price to display (From ₹...)
-            const basePrice = product.pricing[product.pricing.length - 1].price;
+
+            // Create the pricing details string to display on the card
+            let pricingDetailsHTML = '<div class="pricing-details">';
+            // Reverse the array to show from lowest MOQ to highest for display purposes
+            [...product.pricing].reverse().forEach(tier => {
+                pricingDetailsHTML += `<span>${tier.moq}+ : ₹${tier.price}</span>`;
+            });
+            pricingDetailsHTML += '</div>';
+
             productDiv.innerHTML = `
                 <img src="${product.image}" alt="${product.name}">
                 <h3>${product.name}</h3>
-                <p>From ₹${basePrice.toFixed(2)}</p>
-                <input type="number" min="0" value="0" data-index="${index}" class="quantity">
+                ${pricingDetailsHTML}
+                <input type="number" min="0" value="0" data-index="${index}" class="quantity" placeholder="Qty">
             `;
             productCatalogue.appendChild(productDiv);
         });
@@ -117,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBill();
         }
     });
-    
+
     downloadBillBtn.addEventListener('click', () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
