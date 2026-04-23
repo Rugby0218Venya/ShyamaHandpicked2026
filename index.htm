@@ -17,7 +17,11 @@
             <h2>Bill Summary</h2>
             <div id="bill-items"></div>
             <p class="total">Total: ₹<span id="total-price">0</span></p>
-            <button id="download-bill" class="button">Download Bill as PDF</button>
+            <!-- Wrapper for the buttons -->
+            <div class="bill-actions">
+                <button id="clear-selection" class="button button-secondary">Clear Selection</button>
+                <button id="download-bill" class="button">Download Bill as PDF</button>
+            </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
