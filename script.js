@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // The pricing array is sorted from the highest MOQ to the lowest.
     // **IMPORTANT**: Replace the placeholder image URLs with your actual product image URLs.
     let products = [
-       [
+       
     {
         "name": "BHAGWANJI RAKHI LUMBA SET",
         "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+RAKHI+LUMBA+SET",
@@ -455,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { "moq": 11, "price": 68 }
         ]
     }
-]
 
         // ... all other products from your PDF would follow this format
     ];
