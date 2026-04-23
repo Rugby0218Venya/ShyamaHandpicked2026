@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // **IMPORTANT**: Replace the placeholder image URLs with your actual product image URLs.
     let products = [
         { 
-            name: "SH Peachy Pink Rakhi Set", 
+            name: "SH \ Pink Rakhi Set", 
             image: "https://placehold.co/200x200/FFDAB9/8B4513?text=Peachy+Pink", // Replace with your image URL
             pricing: [
                 { moq: 20, price: 135 }, // 20+ sets
