@@ -33,3 +33,23 @@
         grid-template-columns: 1fr; /* Single column on small screens */
     }
 }
+
+/* Utility class to hide sections */
+.hidden {
+    display: none;
+}
+
+/* Center the 'Proceed to Order' button */
+#proceed-to-order {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+}
+
+/* Style for the new 'Back to Details' button */
+#back-to-details {
+    background-color: #b0b0b0;
+}
+#back-to-details:hover {
+    background-color: #999999;
+}
