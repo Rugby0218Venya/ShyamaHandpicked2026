@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBillBtn = document.getElementById('download-bill');
     const clearSelectionBtn = document.getElementById('clear-selection');
 
-    // --- YOUR COMPLETE PRODUCT LIST ---
+    // --- YOUR COMPLETE AND UPDATED PRODUCT LIST ---
     let products = [
         { "name": "BHAGWANJI RAKHI LUMBA SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+RAKHI+LUMBA+SET", "pricing": [{ "moq": 7, "price": 56 }] },
         { "name": "BHAGWANJI MOLI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+MOLI+SET", "pricing": [{ "moq": 7, "price": 31 }] },
@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "MOLI MOTI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=MOLI+MOTI+RAKHI", "pricing": [{ "moq": 24, "price": 22 }] },
         { "name": "INFINITY LOOP MOLI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INFINITY+LOOP+MOLI+RAKHI", "pricing": [{ "moq": 12, "price": 24 }] },
         { "name": "PURE TULSI BEAD RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=PURE+TULSI+BEAD+RAKHI", "pricing": [{ "moq": 36, "price": 16 }] },
+        // --- ITEM ADDED HERE ---
         { "name": "TRIPLE KUNDAN RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=TRIPLE+KUNDAN+RAKHI", "pricing": [{ "moq": 24, "price": 65 }, { "moq": 12, "price": 72 }] },
+        // -----------------------
         { "name": "INTRICATE PURE TULSI BEAD RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INTRICATE+PURE+TULSI+BEAD+RAKHI", "pricing": [{ "moq": 24, "price": 20 }] },
         { "name": "BEAD MOLI SAADI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=BEAD+MOLI+SAADI+RAKHI", "pricing": [{ "moq": 24, "price": 18 }] },
         { "name": "GANESHA MOLI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=GANESHA+MOLI+RAKHI", "pricing": [{ "moq": 24, "price": 15 }] },
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "ROLI CHAWAL NARIYAL PACKING", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+NARIYAL+PACKING", "pricing": [{ "moq": 11, "price": 68 }] }
     ];
 
-    // --- PAGE SWITCHING LOGIC ---
+    // --- (The rest of the script remains unchanged) ---
     proceedToOrderBtn.addEventListener('click', () => {
         if (customerNameInput.value.trim() === '') {
             alert('Please enter a Customer Name before proceeding.');
@@ -99,11 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsPage.classList.remove('hidden');
     });
 
-    // --- BILLING LOGIC (Two-Pass Calculation) ---
     function getStandardPriceForQuantity(quantity, pricingTiers) {
-        for (const tier of pricingTiers) {
-            if (quantity >= tier.moq) return tier.price;
-        }
+        for (const tier of pricingTiers) { if (quantity >= tier.moq) return tier.price; }
         return pricingTiers[pricingTiers.length - 1].price;
     }
 
@@ -118,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 provisionalTotal += getStandardPriceForQuantity(quantity, product.pricing) * quantity;
             }
         });
-
         let finalTotal = 0;
         billItems.innerHTML = '';
         selectedItems.forEach(item => {
@@ -127,20 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let pricePerItem = 0;
             let ruleApplied = '';
             if (item.quantity < lowestMoq) {
-                if (provisionalTotal < 20000) {
-                    pricePerItem = 0;
-                    ruleApplied = ' (MOQ not met, Bill < 20k)';
-                } else {
-                    pricePerItem = highestPrice;
-                    ruleApplied = ' (MOQ not met, Bill > 20k)';
-                }
-            } else {
-                pricePerItem = getStandardPriceForQuantity(item.quantity, item.pricing);
-            }
+                if (provisionalTotal < 20000) { pricePerItem = 0; ruleApplied = ' (MOQ not met, Bill < 20k)'; }
+                else { pricePerItem = highestPrice; ruleApplied = ' (MOQ not met, Bill > 20k)'; }
+            } else { pricePerItem = getStandardPriceForQuantity(item.quantity, item.pricing); }
             const finalItemPrice = pricePerItem * item.quantity;
             finalTotal += finalItemPrice;
             const billItem = document.createElement('div');
-            billItem.textContent = `${item.name} x ${item.quantity} @ ₹${pricePerItem.toFixed(2)} = ₹${finalItemPrice.toFixed(2)}${ruleApplied}`;
+            billItem.textContent = `Rs. {item.name} x ${item.quantity} @ Rs. ${pricePerItem.toFixed(2)} = Rs. ${finalItemPrice.toFixed(2)}${ruleApplied}`;
             billItems.appendChild(billItem);
         });
         totalPriceEl.textContent = finalTotal.toFixed(2);
@@ -154,47 +145,25 @@ document.addEventListener('DOMContentLoaded', () => {
             productDiv.classList.add('product');
             let pricingDetailsHTML = '<div class="pricing-details">';
             [...product.pricing].reverse().forEach(tier => {
-                pricingDetailsHTML += `<span>${tier.moq}+ : ₹${tier.price}</span>`;
+                pricingDetailsHTML += `<span>${tier.moq}+ : Rs. ${tier.price}</span>`;
             });
             pricingDetailsHTML += '</div>';
-            productDiv.innerHTML = `
-                <img src="${product.image}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                ${pricingDetailsHTML}
-                <input type="number" min="0" value="0" data-index="${index}" class="quantity" placeholder="Qty">
-            `;
+            productDiv.innerHTML = `<img src="${product.image}" alt="${product.name}"><h3>${product.name}</h3>${pricingDetailsHTML}<input type="number" min="0" value="0" data-index="${index}" class="quantity" placeholder="Qty">`;
             productCatalogue.appendChild(productDiv);
         });
         updateBill();
     }
 
-    productCatalogue.addEventListener('input', e => {
-        if (e.target.classList.contains('quantity')) updateBill();
-    });
+    productCatalogue.addEventListener('input', e => { if (e.target.classList.contains('quantity')) updateBill(); });
+    clearSelectionBtn.addEventListener('click', () => { document.querySelectorAll('.quantity').forEach(input => { input.value = 0; }); updateBill(); });
 
-    clearSelectionBtn.addEventListener('click', () => {
-        document.querySelectorAll('.quantity').forEach(input => {
-            input.value = 0;
-        });
-        updateBill();
-    });
-
-    // --- FULLY CORRECTED PDF GENERATION LOGIC ---
     downloadBillBtn.addEventListener('click', async () => {
         const customerName = customerNameInput.value.trim();
-        const customerPhone = customerPhoneInput.value.trim();
-        const customerAddress = customerAddressInput.value.trim();
-        const customerNotes = customerNotesInput.value.trim();
-
-        if (!customerName) {
-            alert("Please enter a Customer Name to generate the bill number.");
-            return;
-        }
+        if (!customerName) { alert("Please enter a Customer Name to generate the bill number."); return; }
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const downloadButton = document.getElementById('download-bill');
-        
         downloadButton.textContent = 'Preparing PDF...';
         downloadButton.disabled = true;
 
@@ -204,92 +173,91 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
         
-        const loadImage = (src) => new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.onload = () => resolve(img);
-            img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); };
-            img.src = src;
-        });
-
+        const loadImage = (src) => new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => resolve(img); img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); }; img.src = src; });
+        
         const billData = [];
         let itemsExist = false;
         let provisionalTotalForPdf = 0;
-        const tempSelectedItems = [];
-        
         document.querySelectorAll('.quantity').forEach(input => {
             const quantity = parseInt(input.value);
             if (quantity > 0) {
                 itemsExist = true;
                 const product = products[parseInt(input.dataset.index)];
-                tempSelectedItems.push({ product, quantity });
                 provisionalTotalForPdf += getStandardPriceForQuantity(quantity, product.pricing) * quantity;
             }
         });
 
-        if (!itemsExist) {
-            alert("Please select a quantity for at least one item.");
-            downloadButton.textContent = 'Download Bill as PDF';
-            downloadButton.disabled = false;
-            return;
-        }
-
-        tempSelectedItems.forEach(({ product, quantity }) => {
-            const lowestMoq = product.pricing[product.pricing.length - 1].moq;
-            const highestPrice = product.pricing[product.pricing.length - 1].price;
-            let pricePerItem;
-            if (quantity < lowestMoq) {
-                pricePerItem = (provisionalTotalForPdf < 20000) ? 0 : highestPrice;
-            } else {
-                pricePerItem = getStandardPriceForQuantity(quantity, product.pricing);
+        if (!itemsExist) { alert("Please select a quantity for at least one item."); downloadButton.textContent = 'Download Bill as PDF'; downloadButton.disabled = false; return; }
+        
+        document.querySelectorAll('.quantity').forEach(input => {
+            const quantity = parseInt(input.value);
+            if (quantity > 0) {
+                const product = products[parseInt(input.dataset.index)];
+                const lowestMoq = product.pricing[product.pricing.length - 1].moq;
+                const highestPrice = product.pricing[product.pricing.length - 1].price;
+                let pricePerItem = (quantity < lowestMoq) ? ((provisionalTotalForPdf < 20000) ? 0 : highestPrice) : getStandardPriceForQuantity(quantity, product.pricing);
+                billData.push({ ...product, quantity, pricePerItem });
             }
-            billData.push({ ...product, quantity, pricePerItem });
         });
 
         const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
         
-        doc.setFont('Helvetica', 'bold');
-        doc.setFontSize(20).text("Shyama Handpicked Bill", 105, 15, { align: 'center' });
+        doc.setFont('Times-Roman', 'bold');
+        doc.setFontSize(18);
+        doc.text("Shyama Handpicked Bill", 105, 15, { align: 'center' });
+        
         let y = 25;
-        doc.setFontSize(10).text("Bill To:", 15, y);
-        doc.setFont('Helvetica', 'normal').text(customerName, 35, y);
-        if (customerPhone) doc.text(`Phone: ${customerPhone}`, 15, y += 5);
-        if (customerAddress) doc.text(`Address: ${customerAddress}`, 15, y += 5);
-        doc.setFont('Helvetica', 'bold').text("Bill No:", 140, 25);
-        doc.setFont('Helvetica', 'normal').text(billNumber, 160, 25);
-        doc.setFont('Helvetica', 'bold').text("Date:", 140, 30);
-        doc.setFont('Helvetica', 'normal').text(formattedDate, 160, 30);
-        y = Math.max(y, 40) + 5;
+        doc.setFontSize(9);
+        doc.setFont('Times-Roman', 'bold');
+        doc.text("Bill To:", 15, y);
+        doc.setFont('Times-Roman', 'normal');
+        doc.text(customerNameInput.value.trim(), 32, y);
+        if (customerPhoneInput.value.trim()) doc.text(`Phone: ${customerPhoneInput.value.trim()}`, 15, y += 4);
+        if (customerAddressInput.value.trim()) doc.text(`Address: ${customerAddressInput.value.trim()}`, 15, y += 4);
+
+        doc.setFont('Times-Roman', 'bold');
+        doc.text("Bill No:", 140, 25);
+        doc.setFont('Times-Roman', 'normal');
+        doc.text(billNumber, 155, 25);
+        
+        doc.setFont('Times-Roman', 'bold');
+        doc.text("Date:", 140, 29);
+        doc.setFont('Times-Roman', 'normal');
+        doc.text(formattedDate, 155, 29);
+
+        y = Math.max(y, 35) + 5;
         doc.setDrawColor(150, 150, 150).line(15, y - 2, 195, y - 2);
 
         billData.forEach((item, index) => {
-            if (y > 260) { doc.addPage(); y = 20; }
-            if (loadedImages[index]) {
-                doc.addImage(loadedImages[index], 'JPEG', 15, y, 12, 12);
-            }
+            if (y > 265) { doc.addPage(); y = 20; }
+            if (loadedImages[index]) { doc.addImage(loadedImages[index], 'JPEG', 15, y, 10, 10); }
             const itemTotal = item.pricePerItem * item.quantity;
-            doc.setFontSize(10).text(item.name, 32, y + 5);
-            doc.setFontSize(9).setTextColor(100).text(`${item.quantity} x ₹${item.pricePerItem.toFixed(2)}`, 32, y + 10);
-            doc.setFontSize(11).setTextColor(0).text(`₹${itemTotal.toFixed(2)}`, 195, y + 7, { align: 'right' });
-            y += 20;
+            doc.setFont('Times-Roman', 'normal');
+            doc.setFontSize(9);
+            doc.text(item.name, 30, y + 4);
+            doc.setFontSize(8).setTextColor(100);
+            doc.text(`${item.quantity} x Rs. ${item.pricePerItem.toFixed(2)}`, 30, y + 8);
+            doc.setFontSize(10).setTextColor(0);
+            doc.text(`Rs. ${itemTotal.toFixed(2)}`, 195, y + 6, { align: 'right' });
+            y += 18;
         });
 
         doc.line(15, y, 195, y);
+        const customerNotes = customerNotesInput.value.trim();
         if (customerNotes) {
-            y += 7;
-            doc.setFontSize(9).setFont('Helvetica', 'bold').text("Notes:", 15, y);
+            y += 6;
+            doc.setFontSize(8).setFont('Times-Roman', 'bold').text("Notes:", 15, y);
             const notesLines = doc.splitTextToSize(customerNotes, 180);
-            doc.setFont('Helvetica', 'normal').text(notesLines, 15, y + 4);
-            y += (notesLines.length * 4) + 4;
+            doc.setFont('Times-Roman', 'normal').text(notesLines, 15, y + 3);
+            y += (notesLines.length * 3) + 3;
         }
         y += 5;
-        doc.setFont('Helvetica', 'bold').setFontSize(14).text(`Total: ₹${totalPriceEl.textContent}`, 195, y, { align: 'right' });
+        doc.setFont('Times-Roman', 'bold').setFontSize(12).text(`Total: Rs. ${totalPriceEl.textContent}`, 195, y, { align: 'right' });
         
         doc.save(`${billNumber}.pdf`);
         downloadButton.textContent = 'Download Bill as PDF';
         downloadButton.disabled = false;
     });
 
-    // Initial render of products when the script loads
     renderProducts();
 });
