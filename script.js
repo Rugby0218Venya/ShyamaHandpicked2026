@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "EVIL EYE BIKER RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=EVIL+EYE+BIKER+RAKHI", "pricing": [{ "moq": 12, "price": 35 }] },
         { "name": "DONALD DUCK PENCIL CAP RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=DONALD+DUCK+PENCIL+CAP+RAKHI", "pricing": [{ "moq": 24, "price": 24 }] },
         { "name": "RAINBOWS AND FLOWERS LUMBI", "image": "https://placehold.co/200x200/E9967A/800000?text=RAINBOWS+AND+FLOWERS+LUMBI", "pricing": [{ "moq": 6, "price": 80 }] },
-        { "name": "ROLI CHAWAL PLATTER", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+PLATTER", "pricing": [{ "moq": 12, "price": 60 }] },
+        { "name": "ROLI CHAWAL POUCH", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+PLATTER", "pricing": [{ "moq": 12, "price": 65 }] },
         { "name": "SHANK ROLI CHAWAL PLATTER", "image": "https://placehold.co/200x200/E9967A/800000?text=SHANK+ROLI+CHAWAL+PLATTER", "pricing": [{ "moq": 12, "price": 150 }] },
         { "name": "ROLI CHAWAL NARIYAL PACKING", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+NARIYAL+PACKING", "pricing": [{ "moq": 11, "price": 68 }] }
     ];
