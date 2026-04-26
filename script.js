@@ -158,152 +158,183 @@ document.addEventListener('DOMContentLoaded', () => {
     clearSelectionBtn.addEventListener('click', () => { document.querySelectorAll('.quantity').forEach(input => { input.value = 0; }); updateBill(); });
 
     // --- FULLY UPDATED PDF GENERATION LOGIC ---
-    downloadBillBtn.addEventListener('click', async () => {
-        const customerName = customerNameInput.value.trim();
-        if (!customerName) { alert("Please enter a Customer Name to generate the bill number."); return; }
+ downloadBillBtn.addEventListener('click', async () => {
+    const customerName = customerNameInput.value.trim();
+    if (!customerName) {
+        alert("Please enter a Customer Name to generate the bill number.");
+        return;
+    }
 
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const downloadButton = document.getElementById('download-bill');
-        downloadButton.textContent = 'Preparing PDF...';
-        downloadButton.disabled = true;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const downloadButton = document.getElementById('download-bill');
+    downloadButton.textContent = 'Preparing PDF...';
+    downloadButton.disabled = true;
 
-        let billCounter = parseInt(localStorage.getItem('billCounter') || '0') + 1;
-        const billNumber = `${customerName.split(' ')[0]}_${billCounter}`;
-        localStorage.setItem('billCounter', billCounter);
-        const today = new Date();
-        const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-        
-        const loadImage = (src) => new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => resolve(img); img.onerror = () => { console.error(`Failed to load image: ${src}`); resolve(null); }; img.src = src; });
-        
-        const billData = [];
-        let itemsExist = false;
-        let provisionalTotalForPdf = 0;
-        document.querySelectorAll('.quantity').forEach(input => {
-            const quantity = parseInt(input.value);
-            if (quantity > 0) {
-                itemsExist = true;
-                const product = products[parseInt(input.dataset.index)];
-                provisionalTotalForPdf += getStandardPriceForQuantity(quantity, product.pricing) * quantity;
-            }
-        });
+    let billCounter = parseInt(localStorage.getItem('billCounter') || '0') + 1;
+    const billNumber = `${customerName.split(' ')[0]}_${billCounter}`;
+    localStorage.setItem('billCounter', billCounter);
 
-        if (!itemsExist) { alert("Please select a quantity for at least one item."); downloadButton.textContent = 'Download Bill as PDF'; downloadButton.disabled = false; return; }
-        
-        document.querySelectorAll('.quantity').forEach(input => {
-            const quantity = parseInt(input.value);
-            if (quantity > 0) {
-                const product = products[parseInt(input.dataset.index)];
-                const lowestMoq = product.pricing[product.pricing.length - 1].moq;
-                const highestPrice = product.pricing[product.pricing.length - 1].price;
-                let pricePerItem = (quantity < lowestMoq) ? ((provisionalTotalForPdf < 20000) ? 0 : highestPrice) : getStandardPriceForQuantity(quantity, product.pricing);
-                billData.push({ ...product, quantity, pricePerItem });
-            }
-        });
+    const today = new Date();
+    const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
-        const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
-        
-        // ---- START: PDF Layout and Header Generation ----
-        const customerPhone = customerPhoneInput.value.trim();
-        const customerAddress = customerAddressInput.value.trim();
-        const customerNotes = customerNotesInput.value.trim();
-        
-        function drawHeader(isFirstPage, startY = 15) {
-            let y = startY;
-            if (isFirstPage) {
-                // Full Header for the first page
-                doc.setFont('Times-Roman', 'bold');
-                doc.setFontSize(18);
-                doc.text("Shyama Handpicked Bill", 105, y, { align: 'center' });
-                y += 10;
-                
-                doc.setFontSize(9);
-                doc.setFont('Times-Roman', 'bold');
-                doc.text("Bill To:", 15, y);
-                doc.setFont('Times-Roman', 'normal');
-                doc.text(customerName, 32, y);
-
-                // Right-side details
-                doc.setFont('Times-Roman', 'bold');
-                doc.text("Bill No:", 140, y);
-                doc.setFont('Times-Roman', 'normal');
-                doc.text(billNumber, 155, y);
-
-                y += 4;
-                doc.setFont('Times-Roman', 'bold');
-                doc.text("Date:", 140, y);
-                doc.setFont('Times-Roman', 'normal');
-                doc.text(formattedDate, 155, y);
-
-                if (customerPhone) {
-                    y += 4; // Use y from the name line
-                    doc.setFont('Times-Roman', 'bold');
-                    doc.text("Phone:", 15, y);
-                    doc.setFont('Times-Roman', 'normal');
-                    doc.text(customerPhone, 32, y);
-                }
-
-                if (customerAddress) {
-                    y += 4;
-                    const addressLines = doc.splitTextToSize(customerAddress, 90); // Split address text
-                    const displayLines = addressLines.slice(0, 6); // Limit to 6 lines
-                    
-                    doc.setFont('Times-Roman', 'bold');
-                    doc.text("Address:", 15, y);
-                    doc.setFont('Times-Roman', 'normal');
-                    doc.text(displayLines, 32, y);
-                    y += (displayLines.length - 1) * 3.5; // Adjust y based on number of address lines
-                }
-            } else {
-                // Simplified Header for subsequent pages
-                doc.setFont('Times-Roman', 'normal');
-                doc.setFontSize(8);
-                doc.text(`Bill for: ${customerName}`, 15, y);
-                doc.text(`Phone: ${customerPhone || 'N/A'}`, 85, y);
-                doc.text(`Bill No: ${billNumber}`, 195, y, { align: 'right' });
-                y += 5;
-            }
-            doc.setDrawColor(150, 150, 150).line(15, y, 195, y);
-            return y + 5; // Return the starting y for the item list
-        }
-
-        let y = drawHeader(true); // Draw the full header for the first page
-
-        billData.forEach((item, index) => {
-            // Check if a page break is needed BEFORE drawing the item
-            if (y > 265) {
-                doc.addPage();
-                y = drawHeader(false); // Draw the simplified header
-            }
-
-            if (loadedImages[index]) { doc.addImage(loadedImages[index], 'JPEG', 15, y, 10, 10); }
-            const itemTotal = item.pricePerItem * item.quantity;
-            doc.setFont('Times-Roman', 'normal');
-            doc.setFontSize(9);
-            doc.text(item.name, 30, y + 4);
-            doc.setFontSize(8).setTextColor(100);
-            doc.text(`${item.quantity} x Rs. ${item.pricePerItem.toFixed(2)}`, 30, y + 8);
-            doc.setFontSize(10).setTextColor(0);
-            doc.text(`Rs. ${itemTotal.toFixed(2)}`, 195, y + 6, { align: 'right' });
-            y += 18;
-        });
-
-        doc.line(15, y, 195, y);
-        if (customerNotes) {
-            y += 6;
-            doc.setFontSize(8).setFont('Times-Roman', 'bold').text("Notes:", 15, y);
-            const notesLines = doc.splitTextToSize(customerNotes, 180);
-            doc.setFont('Times-Roman', 'normal').text(notesLines, 15, y + 3);
-            y += (notesLines.length * 3) + 3;
-        }
-        y += 5;
-        doc.setFont('Times-Roman', 'bold').setFontSize(12).text(`Total: Rs. ${totalPriceEl.textContent}`, 195, y, { align: 'right' });
-        // ---- END: PDF Layout and Header Generation ----
-        
-        doc.save(`${billNumber}.pdf`);
-        downloadButton.textContent = 'Download Bill as PDF';
-        downloadButton.disabled = false;
+    const loadImage = (src) => new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+            console.error(`Failed to load image: ${src}`);
+            resolve(null);
+        };
+        img.src = src;
     });
 
-    renderProducts();
+    const billData = [];
+    let itemsExist = false;
+    let provisionalTotalForPdf = 0;
+
+    document.querySelectorAll('.quantity').forEach(input => {
+        const quantity = parseInt(input.value);
+        if (quantity > 0) {
+            itemsExist = true;
+            const product = products[parseInt(input.dataset.index)];
+            provisionalTotalForPdf += getStandardPriceForQuantity(quantity, product.pricing) * quantity;
+        }
+    });
+
+    if (!itemsExist) {
+        alert("Please select a quantity for at least one item.");
+        downloadButton.textContent = 'Download Bill as PDF';
+        downloadButton.disabled = false;
+        return;
+    }
+
+    document.querySelectorAll('.quantity').forEach(input => {
+        const quantity = parseInt(input.value);
+        if (quantity > 0) {
+            const product = products[parseInt(input.dataset.index)];
+            const lowestMoq = product.pricing[product.pricing.length - 1].moq;
+            const highestPrice = product.pricing[product.pricing.length - 1].price;
+            let pricePerItem = (quantity < lowestMoq) ? ((provisionalTotalForPdf < 20000) ? 0 : highestPrice) : getStandardPriceForQuantity(quantity, product.pricing);
+            billData.push({ ...product,
+                quantity,
+                pricePerItem
+            });
+        }
+    });
+
+    const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
+
+    const customerPhone = customerPhoneInput.value.trim();
+    const customerAddress = customerAddressInput.value.trim();
+    const customerNotes = customerNotesInput.value.trim();
+
+    function drawHeader(isFirstPage, startY = 15) {
+        let y = startY;
+        if (isFirstPage) {
+            doc.setFont('Times-Roman', 'bold');
+            doc.setFontSize(18);
+            doc.text("Shyama Handpicked Bill", 105, y, { align: 'center' });
+            y += 10;
+            
+            doc.setFontSize(9);
+            doc.setFont('Times-Roman', 'bold');
+            doc.text("Bill To:", 15, y);
+            doc.setFont('Times-Roman', 'normal');
+            doc.text(customerName, 32, y);
+
+            doc.setFont('Times-Roman', 'bold');
+            doc.text("Bill No:", 140, y);
+            doc.setFont('Times-Roman', 'normal');
+            doc.text(billNumber, 155, y);
+            y += 4;
+            
+            let initialY = y; // Save position after name line
+            doc.setFont('Times-Roman', 'bold');
+            doc.text("Date:", 140, y);
+            doc.setFont('Times-Roman', 'normal');
+            doc.text(formattedDate, 155, y);
+
+            y = initialY; // Reset to draw phone/address below name
+            if (customerPhone) {
+                y += 4;
+                doc.setFont('Times-Roman', 'bold');
+                doc.text("Phone:", 15, y);
+                doc.setFont('Times-Roman', 'normal');
+                doc.text(customerPhone, 32, y);
+            }
+            if (customerAddress) {
+                y += 4;
+                const addressLines = doc.splitTextToSize(customerAddress, 90);
+                const displayLines = addressLines.slice(0, 6);
+                doc.setFont('Times-Roman', 'bold');
+                doc.text("Address:", 15, y);
+                doc.setFont('Times-Roman', 'normal');
+                doc.text(displayLines, 32, y);
+                y += (displayLines.length * 3.5); // Adjust y based on number of address lines
+            }
+
+        } else {
+            doc.setFont('Times-Roman', 'normal');
+            doc.setFontSize(8);
+            doc.text(`Bill for: ${customerName}`, 15, y);
+            doc.text(`Phone: ${customerPhone || 'N/A'}`, 85, y);
+            doc.text(`Bill No: ${billNumber}`, 195, y, { align: 'right' });
+            y += 5;
+        }
+        doc.setDrawColor(150, 150, 150).line(15, y, 195, y);
+        return y + 5; // Return the starting y for the item list
+    }
+
+    // ⭐ FIX: Initialize y with the position after the header
+    let y = drawHeader(true);
+
+    billData.forEach((item, index) => {
+        // ⭐ FIX: Check if a page break is needed BEFORE drawing the item
+        if (y > 260) { // Slightly smaller value for a better margin
+            doc.addPage();
+            y = drawHeader(false); // Draw the simplified header
+        }
+
+        if (loadedImages[index]) {
+            doc.addImage(loadedImages[index], 'JPEG', 15, y, 10, 10);
+        }
+
+        const itemTotal = item.pricePerItem * item.quantity;
+        doc.setFont('Times-Roman', 'normal');
+        doc.setFontSize(9);
+        doc.text(item.name, 30, y + 4);
+        doc.setFontSize(8).setTextColor(100);
+        doc.text(`${item.quantity} x Rs. ${item.pricePerItem.toFixed(2)}`, 30, y + 8);
+        doc.setFontSize(10).setTextColor(0);
+        doc.text(`Rs. ${itemTotal.toFixed(2)}`, 195, y + 6, {
+            align: 'right'
+        });
+        y += 18;
+    });
+
+    // Check for page break before drawing notes and total
+    if (y > 250) {
+        doc.addPage();
+        y = drawHeader(false);
+    }
+
+    doc.line(15, y, 195, y);
+
+    if (customerNotes) {
+        y += 6;
+        doc.setFontSize(8).setFont('Times-Roman', 'bold').text("Notes:", 15, y);
+        const notesLines = doc.splitTextToSize(customerNotes, 180);
+        doc.setFont('Times-Roman', 'normal').text(notesLines, 15, y + 3);
+        y += (notesLines.length * 3) + 3;
+    }
+
+    y += 5;
+    doc.setFont('Times-Roman', 'bold').setFontSize(12).text(`Total: Rs. ${totalPriceEl.textContent}`, 195, y, {
+        align: 'right'
+    });
+
+    doc.save(`${billNumber}.pdf`);
+    downloadButton.textContent = 'Download Bill as PDF';
+    downloadButton.disabled = false;
 });
