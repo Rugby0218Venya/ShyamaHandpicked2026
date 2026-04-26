@@ -92,15 +92,14 @@ h2 {
     font-family: 'Cinzel', serif;
     font-size: 1.2em;
     color: #8c5a3d;
-    margin-top: 0;
-    margin-bottom: 8px;
-    min-height: 40px; /* Helps align titles */
+    margin: 10px 0;
+    min-height: 40px;
 }
 
 .product .quantity {
     width: 60px;
     padding: 5px;
-    margin-top: 10px; /* Added margin */
+    margin: 10px auto 0;
     border: 1px solid #d3c5aa;
     border-radius: 4px;
     text-align: center;
@@ -115,10 +114,6 @@ h2 {
     padding: 8px 0;
     border-bottom: 1px dashed #e0d8c9;
     color: #584a3c;
-}
-
-#bill-items div:last-child {
-    border-bottom: none;
 }
 
 .bill-summary .total {
@@ -145,7 +140,6 @@ h2 {
     border-radius: 3px;
 }
 
-/* Styles for two-page layout */
 .hidden {
     display: none;
 }
@@ -174,7 +168,7 @@ h2 {
 
 #back-to-details {
     background-color: #b0b0b0;
-    margin-right: auto; /* Pushes this button to the left */
+    margin-right: auto;
 }
 #back-to-details:hover {
     background-color: #999999;
@@ -190,4 +184,24 @@ h2 {
     gap: 20px;
 }
 
-.details
+.details-grid input,
+.details-grid textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d3c5aa;
+    border-radius: 4px;
+    font-family: 'Lora', serif;
+    color: #584a3c;
+    box-sizing: border-box;
+    background-color: #fffbf5;
+}
+
+.details-grid textarea {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
