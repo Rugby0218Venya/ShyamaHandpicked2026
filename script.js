@@ -87,14 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // --- (The rest of the script is unchanged except for the PDF generation part) ---
-    proceedToOrderBtn.addEventListener('click', () => {
-        if (customerNameInput.value.trim() === '') {
-            alert('Please enter a Customer Name before proceeding.');
-            return;
-        }
-        detailsPage.classList.add('hidden');
-        orderingPage.classList.remove('hidden');
-    });
+  proceedToOrderBtn.addEventListener('click', () => {
+    
+    if (customerNameInput.value.trim() === '') {
+        alert('Please enter a Customer Name before proceeding.');
+        return; 
+    }
+
+    // This code only runs if a name IS provided.
+    detailsPage.classList.add('hidden');
+    orderingPage.classList.remove('hidden');
+});
+
 
     backToDetailsBtn.addEventListener('click', () => {
         orderingPage.classList.add('hidden');
