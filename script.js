@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBillBtn = document.getElementById('download-bill');
     const clearSelectionBtn = document.getElementById('clear-selection');
 
-    // --- YOUR COMPLETE AND UPDATED PRODUCT LIST ---
+    // --- YOUR COMPLETE PRODUCT LIST ---
     let products = [
-        { "name": "BHAGWANJI RAKHI LUMBA SET", "image.src": "Screenshot 2026-01-13 161441.png", "pricing": [{ "moq": 7, "price": 56 }] },
+        { "name": "BHAGWANJI RAKHI LUMBA SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+RAKHI+LUMBA+SET", "pricing": [{ "moq": 7, "price": 56 }] },
         { "name": "BHAGWANJI MOLI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BHAGWANJI+MOLI+SET", "pricing": [{ "moq": 7, "price": 31 }] },
         { "name": "SMALL SOAN", "image": "https://placehold.co/200x200/E9967A/800000?text=SMALL+SOAN", "pricing": [{ "moq": 21, "price": 25 }] },
         { "name": "RAM RAM PARROT SOAN", "image": "https://placehold.co/200x200/E9967A/800000?text=RAM+RAM+PARROT+SOAN", "pricing": [{ "moq": 11, "price": 45 }] },
@@ -35,9 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "MOLI MOTI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=MOLI+MOTI+RAKHI", "pricing": [{ "moq": 24, "price": 22 }] },
         { "name": "INFINITY LOOP MOLI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INFINITY+LOOP+MOLI+RAKHI", "pricing": [{ "moq": 12, "price": 24 }] },
         { "name": "PURE TULSI BEAD RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=PURE+TULSI+BEAD+RAKHI", "pricing": [{ "moq": 36, "price": 16 }] },
-        // --- ITEM ADDED HERE ---
         { "name": "TRIPLE KUNDAN RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=TRIPLE+KUNDAN+RAKHI", "pricing": [{ "moq": 24, "price": 65 }, { "moq": 12, "price": 72 }] },
-        // -----------------------
         { "name": "INTRICATE PURE TULSI BEAD RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INTRICATE+PURE+TULSI+BEAD+RAKHI", "pricing": [{ "moq": 24, "price": 20 }] },
         { "name": "BEAD MOLI SAADI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=BEAD+MOLI+SAADI+RAKHI", "pricing": [{ "moq": 24, "price": 18 }] },
         { "name": "GANESHA MOLI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=GANESHA+MOLI+RAKHI", "pricing": [{ "moq": 24, "price": 15 }] },
@@ -86,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "ROLI CHAWAL NARIYAL PACKING", "image": "https://placehold.co/200x200/E9967A/800000?text=ROLI+CHAWAL+NARIYAL+PACKING", "pricing": [{ "moq": 11, "price": 68 }] }
     ];
 
-    // --- (The rest of the script remains unchanged) ---
+    // --- (The rest of the script is unchanged except for the PDF generation part) ---
     proceedToOrderBtn.addEventListener('click', () => {
         if (customerNameInput.value.trim() === '') {
             alert('Please enter a Customer Name before proceeding.');
@@ -157,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     productCatalogue.addEventListener('input', e => { if (e.target.classList.contains('quantity')) updateBill(); });
     clearSelectionBtn.addEventListener('click', () => { document.querySelectorAll('.quantity').forEach(input => { input.value = 0; }); updateBill(); });
 
+    // --- FULLY UPDATED PDF GENERATION LOGIC ---
     downloadBillBtn.addEventListener('click', async () => {
         const customerName = customerNameInput.value.trim();
         if (!customerName) { alert("Please enter a Customer Name to generate the bill number."); return; }
@@ -202,34 +201,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const loadedImages = await Promise.all(billData.map(item => loadImage(item.image)));
         
-        doc.setFont('Times-Roman', 'bold');
-        doc.setFontSize(18);
-        doc.text("Shyama Handpicked Bill", 105, 15, { align: 'center' });
+        // ---- START: PDF Layout and Header Generation ----
+        const customerPhone = customerPhoneInput.value.trim();
+        const customerAddress = customerAddressInput.value.trim();
+        const customerNotes = customerNotesInput.value.trim();
         
-        let y = 25;
-        doc.setFontSize(9);
-        doc.setFont('Times-Roman', 'bold');
-        doc.text("Bill To:", 15, y);
-        doc.setFont('Times-Roman', 'normal');
-        doc.text(customerNameInput.value.trim(), 32, y);
-        if (customerPhoneInput.value.trim()) doc.text(`Phone: ${customerPhoneInput.value.trim()}`, 15, y += 4);
-        if (customerAddressInput.value.trim()) doc.text(`Address: ${customerAddressInput.value.trim()}`, 15, y += 4);
+        function drawHeader(isFirstPage, startY = 15) {
+            let y = startY;
+            if (isFirstPage) {
+                // Full Header for the first page
+                doc.setFont('Times-Roman', 'bold');
+                doc.setFontSize(18);
+                doc.text("Shyama Handpicked Bill", 105, y, { align: 'center' });
+                y += 10;
+                
+                doc.setFontSize(9);
+                doc.setFont('Times-Roman', 'bold');
+                doc.text("Bill To:", 15, y);
+                doc.setFont('Times-Roman', 'normal');
+                doc.text(customerName, 32, y);
 
-        doc.setFont('Times-Roman', 'bold');
-        doc.text("Bill No:", 140, 25);
-        doc.setFont('Times-Roman', 'normal');
-        doc.text(billNumber, 155, 25);
-        
-        doc.setFont('Times-Roman', 'bold');
-        doc.text("Date:", 140, 29);
-        doc.setFont('Times-Roman', 'normal');
-        doc.text(formattedDate, 155, 29);
+                // Right-side details
+                doc.setFont('Times-Roman', 'bold');
+                doc.text("Bill No:", 140, y);
+                doc.setFont('Times-Roman', 'normal');
+                doc.text(billNumber, 155, y);
 
-        y = Math.max(y, 35) + 5;
-        doc.setDrawColor(150, 150, 150).line(15, y - 2, 195, y - 2);
+                y += 4;
+                doc.setFont('Times-Roman', 'bold');
+                doc.text("Date:", 140, y);
+                doc.setFont('Times-Roman', 'normal');
+                doc.text(formattedDate, 155, y);
+
+                if (customerPhone) {
+                    y += 4; // Use y from the name line
+                    doc.setFont('Times-Roman', 'bold');
+                    doc.text("Phone:", 15, y);
+                    doc.setFont('Times-Roman', 'normal');
+                    doc.text(customerPhone, 32, y);
+                }
+
+                if (customerAddress) {
+                    y += 4;
+                    const addressLines = doc.splitTextToSize(customerAddress, 90); // Split address text
+                    const displayLines = addressLines.slice(0, 6); // Limit to 6 lines
+                    
+                    doc.setFont('Times-Roman', 'bold');
+                    doc.text("Address:", 15, y);
+                    doc.setFont('Times-Roman', 'normal');
+                    doc.text(displayLines, 32, y);
+                    y += (displayLines.length - 1) * 3.5; // Adjust y based on number of address lines
+                }
+            } else {
+                // Simplified Header for subsequent pages
+                doc.setFont('Times-Roman', 'normal');
+                doc.setFontSize(8);
+                doc.text(`Bill for: ${customerName}`, 15, y);
+                doc.text(`Phone: ${customerPhone || 'N/A'}`, 85, y);
+                doc.text(`Bill No: ${billNumber}`, 195, y, { align: 'right' });
+                y += 5;
+            }
+            doc.setDrawColor(150, 150, 150).line(15, y, 195, y);
+            return y + 5; // Return the starting y for the item list
+        }
+
+        let y = drawHeader(true); // Draw the full header for the first page
 
         billData.forEach((item, index) => {
-            if (y > 265) { doc.addPage(); y = 20; }
+            // Check if a page break is needed BEFORE drawing the item
+            if (y > 265) {
+                doc.addPage();
+                y = drawHeader(false); // Draw the simplified header
+            }
+
             if (loadedImages[index]) { doc.addImage(loadedImages[index], 'JPEG', 15, y, 10, 10); }
             const itemTotal = item.pricePerItem * item.quantity;
             doc.setFont('Times-Roman', 'normal');
@@ -243,7 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         doc.line(15, y, 195, y);
-        const customerNotes = customerNotesInput.value.trim();
         if (customerNotes) {
             y += 6;
             doc.setFontSize(8).setFont('Times-Roman', 'bold').text("Notes:", 15, y);
@@ -253,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         y += 5;
         doc.setFont('Times-Roman', 'bold').setFontSize(12).text(`Total: Rs. ${totalPriceEl.textContent}`, 195, y, { align: 'right' });
+        // ---- END: PDF Layout and Header Generation ----
         
         doc.save(`${billNumber}.pdf`);
         downloadButton.textContent = 'Download Bill as PDF';
