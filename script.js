@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "TISSUE FLOWER EVIL EYE SET", "image": "https://placehold.co/200x200/E9967A/800000?text=TISSUE+FLOWER+EVIL+EYE+SET", "pricing": [{ "moq": 12, "price": 180 }, { "moq": 6, "price": 195 }] },
         { "name": "ROSE LACE LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=ROSE+LACE+LUMBA+RAKHI+SET", "pricing": [{ "moq": 24, "price": 65 }, { "moq": 12, "price": 75 }] },
         { "name": "GOTA GHUNGHROO LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=GOTA+GHUNGHROO+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 130 }, { "moq": 6, "price": 145 }] },
+        { "name": "ANTI-TARNISH TEMPLE JEWELLERY SET", "image": "https://placehold.co/200x200/E9967A/800000?text=ANTI+TARNISH+JEWELLERY", "pricing": [{ "moq": 6, "price": 170 }] },
         { "name": "MINT GREEN LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=MINT+GREEN+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 140 }, { "moq": 6, "price": 150 }] },
         { "name": "MORPANKH LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=MORPANKH+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 150 }, { "moq": 6, "price": 160 }] },
         { "name": "FLORAL BRACELET LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=FLORAL+BRACELET+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 210 }, { "moq": 6, "price": 225 }] },
