@@ -1,11 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- PAGE ELEMENTS ---
-    const detailsPage = document.getElementById('details-page');
-    const orderingPage = document.getElementById('ordering-page');
+    console.log('DOMContentLoaded fired');
+    
+    // Check if elements exist
     const proceedToOrderBtn = document.getElementById('proceed-to-order');
-    const backToDetailsBtn = document.getElementById('back-to-details');
+    console.log('proceedToOrderBtn:', proceedToOrderBtn);
+    
+    const detailsPage = document.getElementById('details-page');
+    console.log('detailsPage:', detailsPage);
+    
+    const orderingPage = document.getElementById('ordering-page');
+    console.log('orderingPage:', orderingPage);
+    
+    if (!proceedToOrderBtn) {
+        console.error('ERROR: Button not found!');
+        return;
+    }
 
-    // --- CUSTOMER DETAIL INPUTS ---
+    // --- PAGE ELEMENTS ---
     const customerNameInput = document.getElementById('customerName');
     const customerPhoneInput = document.getElementById('customerPhone');
     const customerAddressInput = document.getElementById('customerAddress');
