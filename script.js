@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "RED STONE BUTI RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=RED+STONE+BUTI+RAKHI", "pricing": [{ "moq": 24, "price": 27 }, { "moq": 12, "price": 31 }] },
         { "name": "TRADITIONAL BUTI CHAKALIYA", "image": "https://placehold.co/200x200/E9967A/800000?text=TRADITIONAL+BUTI+CHAKALIYA", "pricing": [{ "moq": 12, "price": 32 }] },
         { "name": "RUDRAKSH MOLI BAND", "image": "https://placehold.co/200x200/E9967A/800000?text=RUDRAKSH+MOLI+BAND", "pricing": [{ "moq": 24, "price": 65 }, { "moq": 12, "price": 72 }] },
-        { "name": "INTRICATE STAR COUPLE RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INTRICATE+STAR+COUPLE+RAKHI", "pricing": [{ "moq": 12, "price": 100 }, { "moq": 6, "price": 110 }] },
+        { "name": "INTRICATE STAR COUPLE RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=INTRICATE+STAR+COUPLE+RAKHI", "pricing": [{ "moq": 12, "price": 100 }, { "moq": 6, "price": 115 }] },
         { "name": "MOLI LEAF COUPLE BAND", "image": "https://placehold.co/200x200/E9967A/800000?text=MOLI+LEAF+COUPLE+BAND", "pricing": [{ "moq": 24, "price": 110 }, { "moq": 12, "price": 125 }] },
         { "name": "UNDERSTATED MOLI COUPLE RAKHI", "image": "https://placehold.co/200x200/E9967A/800000?text=UNDERSTATED+MOLI+COUPLE+RAKHI", "pricing": [{ "moq": 24, "price": 85 }, { "moq": 12, "price": 95 }] },
         { "name": "FLOWER BEAD MOLI BAND", "image": "https://placehold.co/200x200/E9967A/800000?text=FLOWER+BEAD+MOLI+BAND", "pricing": [{ "moq": 12, "price": 70 }] },
@@ -61,10 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { "name": "BOUQUET BRACELET RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BOUQUET+BRACELET+RAKHI+SET", "pricing": [{ "moq": 12, "price": 125 }, { "moq": 6, "price": 135 }] },
         { "name": "HEAVY GOL ZARDOSI LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=HEAVY+GOL+ZARDOSI+LUMBA+RAKHI+SET", "pricing": [{ "moq": 6, "price": 190 }] },
         { "name": "MIRROR LUMBI RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=MIRROR+LUMBI+RAKHI+SET", "pricing": [{ "moq": 24, "price": 50 }] },
-        { "name": "EVIL EYE MULTICOLOR LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=EVIL+EYE+MULTICOLOR+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 130 }, { "moq": 6, "price": 140 }] },
-        { "name": "BUTTERFLY LUMBI BRACELET SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BUTTERFLY+LUMBI+BRACELET+SET", "pricing": [{ "moq": 18, "price": 100 }, { "moq": 12, "price": 110 }] },
+        { "name": "EVIL EYE MULTICOLOR LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=EVIL+EYE+MULTICOLOR+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 130 }, { "moq": 6, "price": 145 }] },
+        { "name": "BUTTERFLY LUMBI BRACELET SET", "image": "https://placehold.co/200x200/E9967A/800000?text=BUTTERFLY+LUMBI+BRACELET+SET", "pricing": [{ "moq": 18, "price": 100 }, { "moq": 12, "price": 115 }] },
         { "name": "HEAVY BANDHEJ LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=HEAVY+BANDHEJ+LUMBA+RAKHI+SET", "pricing": [{ "moq": 18, "price": 140 }, { "moq": 12, "price": 155 }] },
-        { "name": "HAND FINISHED FLOWER BRACELET SET", "image": "https://placehold.co/200x200/E9967A/800000?text=HAND+FINISHED+FLOWER+BRACELET+SET", "pricing": [{ "moq": 12, "price": 145 }, { "moq": 6, "price": 155 }] },
+        { "name": "HAND FINISHED FLOWER BRACELET SET", "image": "https://placehold.co/200x200/E9967A/800000?text=HAND+FINISHED+FLOWER+BRACELET+SET", "pricing": [{ "moq": 12, "price": 145 }, { "moq": 6, "price": 160 }] },
         { "name": "TASSEL JADAOO BRACELET SET", "image": "https://placehold.co/200x200/E9967A/800000?text=TASSEL+JADAOO+BRACELET+SET", "pricing": [{ "moq": 24, "price": 75 }, { "moq": 18, "price": 85 }] },
         { "name": "LOTUS FRILL LUMBA RAKHI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=LOTUS+FRILL+LUMBA+RAKHI+SET", "pricing": [{ "moq": 12, "price": 75 }] },
         { "name": "YELLOW FLOWER BUTI SET", "image": "https://placehold.co/200x200/E9967A/800000?text=YELLOW+FLOWER+BUTI+SET", "pricing": [{ "moq": 12, "price": 145 }, { "moq": 6, "price": 155 }] },
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalItemPrice = pricePerItem * item.quantity;
             finalTotal += finalItemPrice;
             const billItem = document.createElement('div');
-            billItem.textContent = `Rs. {item.name} x ${item.quantity} @ Rs. ${pricePerItem.toFixed(2)} = Rs. ${finalItemPrice.toFixed(2)}${ruleApplied}`;
+            billItem.textContent = `Rs. ${item.name} x ${item.quantity} @ Rs. ${pricePerItem.toFixed(2)} = Rs. ${finalItemPrice.toFixed(2)}${ruleApplied}`;
             billItems.appendChild(billItem);
         });
         totalPriceEl.textContent = finalTotal.toFixed(2);
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pricingDetailsHTML += `<span>${tier.moq}+ : Rs. ${tier.price}</span>`;
             });
             pricingDetailsHTML += '</div>';
-            productDiv.innerHTML = `<img src="${product.image}" alt="${product.name}"><h3>${product.name}</h3>${pricingDetailsHTML}<input type="number" min="0" value="0" data-index="${index}" class="quantity" placeholder="Qty">`;
+            productDiv.innerHTML = `<img src="${product.image}" alt="${product.name}"><h3>${product.name}</h3>${pricingDetailsHTML}<input type="number" min="0" value="0" data-index="${index}" class="quantity">`;
             productCatalogue.appendChild(productDiv);
         });
         updateBill();
