@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalItemPrice = pricePerItem * item.quantity;
             finalTotal += finalItemPrice;
             const billItem = document.createElement('div');
-            billItem.textContent = `Rs. {item.name} x ${item.quantity} @ Rs. ${pricePerItem.toFixed(2)} = Rs. ${finalItemPrice.toFixed(2)}${ruleApplied}`;
+            billItem.textContent = `Rs. ${item.name} x ${item.quantity} @ Rs. ${pricePerItem.toFixed(2)} = Rs. ${finalItemPrice.toFixed(2)}${ruleApplied}`;
             billItems.appendChild(billItem);
         });
         totalPriceEl.textContent = finalTotal.toFixed(2);
